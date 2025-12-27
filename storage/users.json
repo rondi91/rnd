@@ -1,0 +1,98 @@
+[
+    {
+        "id": 4,
+        "name": "Admin",
+        "email": "admin@local",
+        "status": "aktif",
+        "password": "admin123",
+        "role": "admin",
+        "permissions": [
+            "*"
+        ]
+    },
+    {
+        "name": "rondi",
+        "email": "rondie91@gmail.com",
+        "status": "aktif",
+        "password": "rondi",
+        "role": "admin",
+        "permissions": [
+            "*"
+        ],
+        "id": 5
+    },
+    {
+        "name": "inu",
+        "email": "inu@gmail.com",
+        "status": "aktif",
+        "password": "inu",
+        "role": "kasir",
+        "permissions": [
+            "billing",
+            "billing:KAUMAM",
+            "billing:KAUMAN",
+            "billing:KAUMAN.XNET",
+            "billing:SALAAN",
+            "billing:SAPEN",
+            "billing:SAPEN.XNET",
+            "billing:kauman"
+        ],
+        "id": 6
+    },
+    {
+        "name": "nur",
+        "email": "yanto@gmail.com",
+        "status": "aktif",
+        "password": "nur",
+        "role": "kasir",
+        "permissions": [
+            "billing",
+            "billing:DUNGSARI",
+            "billing:KARANGGENENG",
+            "billing:KARANGJATI",
+            "billing:KIDUL",
+            "billing:KJ",
+            "billing:KULON",
+            "billing:LLOR",
+            "billing:LOR",
+            "billing:MERBUH",
+            "billing:MIJEN",
+            "billing:SOMOPURO",
+            "billing:WETAN"
+        ],
+        "id": 7
+    },
+    {
+        "name": "yanto",
+        "email": "yanto@gmail.com",
+        "status": "aktif",
+        "password": "yanto",
+        "role": "cek",
+        "permissions": [
+            "billing",
+            "billing:BEBENGAN",
+            "billing:DS",
+            "billing:DUNGSARI",
+            "billing:GEDANGAN",
+            "billing:GENTANKIDUL",
+            "billing:KARANGGENENG",
+            "billing:KARANGJATI",
+            "billing:KAUMAM",
+            "billing:KAUMAN",
+            "billing:KAUMAN.XNET",
+            "billing:KIDUL",
+            "billing:KJ",
+            "billing:KULON",
+            "billing:LLOR",
+            "billing:LOR",
+            "billing:MERBUH",
+            "billing:MIJEN",
+            "billing:SALAAN",
+            "billing:SAPEN",
+            "billing:SAPEN.XNET",
+            "billing:SOMOPURO",
+            "billing:WETAN"
+        ],
+        "id": 8
+    }
+]

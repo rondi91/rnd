@@ -1,0 +1,18 @@
+[
+  {
+    "id": 1,
+    "router_id": 4,
+    "username": "user01",
+    "ip_address": "10.10.0.21",
+    "uptime": "03:12:44",
+    "profile": "default"
+  },
+  {
+    "id": 2,
+    "router_id": 4,
+    "username": "user02",
+    "ip_address": "10.10.0.22",
+    "uptime": "00:55:13",
+    "profile": "vip"
+  }
+]

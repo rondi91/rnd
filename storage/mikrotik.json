@@ -1,0 +1,238 @@
+[
+    {
+        "name": "SERVER 2 40.1",
+        "host": "192.168.255.26",
+        "location": "TRIANGLE",
+        "notes": "",
+        "category": "SERVER",
+        "username": "rondi",
+        "password": "21184662",
+        "id": 4,
+        "traffic_interface": "<pppoe-2.SISWATI@LOR>"
+    },
+    {
+        "name": "SERVER 1 30.1",
+        "host": "192.168.255.21",
+        "location": "TRIANGLE",
+        "category": "SERVER",
+        "notes": "",
+        "username": "rondi",
+        "password": "21184662",
+        "id": 5,
+        "traffic_interface": "ether4 - IN  GR3 OLD"
+    },
+    {
+        "id": 6,
+        "name": "ap_rnd_3_lor@AP",
+        "host": "172.16.40.28",
+        "location": "TRIANGLE",
+        "username": "rondi",
+        "password": "21184662",
+        "notes": "from PPPoE aktif",
+        "category": "ap",
+        "traffic_interface": "bridge1"
+    },
+    {
+        "id": 7,
+        "name": "AP_KASYONO@AP",
+        "host": "172.16.30.19",
+        "location": "KASYONO",
+        "username": "rondi",
+        "password": "21184662",
+        "notes": "from PPPoE aktif",
+        "category": "ap"
+    },
+    {
+        "id": 8,
+        "name": "ap_swh@AP",
+        "host": "172.16.40.27",
+        "location": "SWH",
+        "username": "rondi",
+        "password": "21184662",
+        "notes": "from PPPoE aktif",
+        "category": "ap"
+    },
+    {
+        "id": 9,
+        "name": "KL1_kauman_k@ap",
+        "host": "172.16.40.15",
+        "location": "KAUMAN",
+        "username": "rondi",
+        "password": "21184662",
+        "notes": "from PPPoE aktif",
+        "category": "ap"
+    },
+    {
+        "id": 10,
+        "name": "apkl1@kauman",
+        "host": "172.16.40.24",
+        "location": "KAUMAN",
+        "username": "rondi",
+        "password": "21184662",
+        "notes": "from PPPoE aktif",
+        "category": "ap"
+    },
+    {
+        "id": 11,
+        "name": "APMBBB@AP",
+        "host": "172.16.40.29",
+        "location": "TRIANGLE",
+        "username": "rondi",
+        "password": "21184662",
+        "notes": "from PPPoE aktif",
+        "category": "ap"
+    },
+    {
+        "name": "ISP 1",
+        "host": "192.168.255.20",
+        "location": "HOME",
+        "category": "ISP",
+        "notes": "",
+        "username": "rondi",
+        "password": "21184662",
+        "id": 12,
+        "traffic_interface": "pppoe-out1"
+    },
+    {
+        "name": "ISP 2",
+        "host": "192.168.255.25",
+        "location": "HOME",
+        "category": "ISP",
+        "notes": "",
+        "username": "rondi",
+        "password": "21184662",
+        "id": 13,
+        "traffic_interface": "VLAN11-ISP2"
+    },
+    {
+        "id": 14,
+        "name": "AP1_MBAKNUR@AP",
+        "host": "172.16.30.20",
+        "location": "NUR",
+        "username": "rondi",
+        "password": "21184662",
+        "notes": "from PPPoE aktif",
+        "category": "ap"
+    },
+    {
+        "id": 15,
+        "name": "aprnd4@ap",
+        "host": "172.16.30.10",
+        "location": "SOL",
+        "username": "rondi",
+        "password": "21184662",
+        "notes": "from PPPoE aktif",
+        "category": "ap"
+    },
+    {
+        "id": 16,
+        "name": "munibAP1@ap",
+        "host": "172.16.40.12",
+        "location": "KARANG JATI",
+        "username": "rondi",
+        "password": "21184662",
+        "notes": "from PPPoE aktif",
+        "category": "ap"
+    },
+    {
+        "id": 17,
+        "name": "APMNB2@AP",
+        "host": "172.16.40.14",
+        "location": "KARANG JATI",
+        "username": "rondi",
+        "password": "21184662",
+        "notes": "from PPPoE aktif",
+        "category": "ap"
+    },
+    {
+        "id": 18,
+        "name": "APSMSP@AP",
+        "host": "172.16.30.9",
+        "location": "TRIANGLE",
+        "username": "rondi",
+        "password": "21184662",
+        "notes": "from PPPoE aktif",
+        "category": "ap"
+    },
+    {
+        "id": 19,
+        "name": "PTPDS@DS",
+        "host": "172.16.40.30",
+        "location": "TRIANGLE",
+        "username": "rondi",
+        "password": "21184662",
+        "notes": "from PPPoE aktif",
+        "category": "ap"
+    },
+    {
+        "id": 20,
+        "name": "ST KELIK",
+        "host": "172.16.40.11",
+        "location": "KAUMAN",
+        "username": "rondi",
+        "password": "21184662",
+        "notes": "from PPPoE aktif",
+        "category": "ST"
+    },
+    {
+        "id": 21,
+        "name": "AP TR KAUMAN",
+        "host": "172.16.40.22",
+        "location": "TRIANGLE",
+        "username": "rondi",
+        "password": "21184662",
+        "notes": "from PPPoE aktif",
+        "category": "ap"
+    },
+    {
+        "id": 22,
+        "name": "rondioffice@st",
+        "host": "172.16.40.21",
+        "location": "SWH",
+        "username": "rondi",
+        "password": "21184662",
+        "notes": "from PPPoE aktif",
+        "category": "ap"
+    },
+    {
+        "id": 23,
+        "name": "haplite@office",
+        "host": "172.16.40.20",
+        "location": "SWH",
+        "username": "rondi",
+        "password": "21184662",
+        "notes": "from PPPoE aktif",
+        "category": "ST",
+        "traffic_interface": "ether3 IN LOCO"
+    },
+    {
+        "name": "AP TR KL",
+        "host": "192.168.15.2",
+        "location": "KAUMAN",
+        "category": "AP UBNT",
+        "notes": "",
+        "username": "ubnt",
+        "password": "Bukhori99",
+        "id": 24
+    },
+    {
+        "name": "ST TR KL",
+        "host": "192.168.15.3",
+        "location": "KAUMAN",
+        "category": "AP UBNT",
+        "notes": "",
+        "username": "ubnt",
+        "password": "bUKHORI99",
+        "id": 25
+    },
+    {
+        "id": 26,
+        "name": "omni",
+        "host": "172.16.30.176",
+        "location": "ULFA",
+        "username": "rondi",
+        "password": "21184662",
+        "notes": "from PPPoE aktif",
+        "category": "ap"
+    }
+]

@@ -1,0 +1,60 @@
+    });
+
+    function renderData(data) {
+        if (!data) return;
+        if (metricTotal) metricTotal.textContent = data.summary ? data.summary.total : '';
+        if (metricActive) metricActive.textContent = data.summary ? data.summary.active : '';
+        if (metricInactive) metricInactive.textContent = data.summary ? data.summary.inactive : '';
+
+        buildActiveTable(data);
+
+        if (inactiveTableBody) {
+            inactiveTableBody.innerHTML = '';
+            (data.inactive_users || []).forEach(function(u){
+                var tr = document.createElement('tr');
+                ['username','profile','router_name'].forEach(function(key){
+                    var td = document.createElement('td');
+                    td.style.padding = '0.25rem';
+                    td.textContent = u[key] || '';
+                    tr.appendChild(td);
+                });
+                var actionTd = document.createElement('td');
+                actionTd.style.padding = '0.25rem';
+                var delBtn = document.createElement('button');
+                delBtn.type = 'button';
+                delBtn.className = 'ghost inactive-delete-btn';
+                delBtn.textContent = '✕';
+                delBtn.title = 'Hapus user';
+                delBtn.dataset.username = u.username || '';
+                delBtn.dataset.routerName = u.router_name || '';
+                delBtn.dataset.routerId = u.router_id || '';
+                actionTd.appendChild(delBtn);
+                tr.appendChild(actionTd);
+                inactiveTableBody.appendChild(tr);
+            });
+        }
+    }
+
+    function buildActiveTable(data) {
+        var tbody = activeTableBody;
+        if (!tbody) return;
+        tbody.innerHTML = '';
+
+        var list = data.active || [];
+        // apply filter router/profile
+        var fRouter = filterRouter ? filterRouter.value : '';
+        var fProfile = filterProfile ? filterProfile.value : '';
+        list = list.filter(function(item){
+            var okRouter = !fRouter || (String(item.router_id || '') === fRouter);
+            var okProfile = !fProfile || (String(item.profile || '').toLowerCase() === fProfile.toLowerCase());
+            return okRouter && okProfile;
+        });
+
+        list = list.slice().sort(function(a,b){
+            var ua = uptimeToSeconds(a.uptime || '');
+            var ub = uptimeToSeconds(b.uptime || '');
+            if (ua === ub) {
+                var sa = (a.uptime || '').toLowerCase();
+                var sb = (b.uptime || '').toLowerCase();
+                return sortDir === 'asc' ? sa.localeCompare(sb) : sb.localeCompare(sa);
+            }
