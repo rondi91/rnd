@@ -70,8 +70,34 @@ if (isset($currentUser) && is_array($currentUser)) {
                 <input type="file" id="bill-backup-file" accept="application/json" style="display:none;">
             </label>
             <button type="button" class="ghost" id="bill-backup-import">Import Backup</button>
+            <label style="display:inline-flex; align-items:center; gap:0.35rem; padding-left:0.25rem;">
+                <input type="checkbox" id="bill-backup-replace">
+                <span>Replace backup terakhir</span>
+            </label>
         </div>
         <div class="muted" id="bill-backup-status" style="margin-top:0.4rem;"></div>
+        <div style="margin-top:0.6rem;">
+            <div class="muted" style="margin-bottom:0.35rem;">File backup otomatis</div>
+            <div style="display:flex; gap:0.5rem; flex-wrap:wrap; align-items:center; margin-bottom:0.4rem;">
+                <button type="button" class="ghost" id="bill-backup-refresh">Refresh List</button>
+                <button type="button" class="ghost" id="bill-backup-download-latest">Download Terbaru</button>
+            </div>
+            <div class="table-wrapper">
+                <table class="bill-table">
+                    <thead>
+                        <tr>
+                            <th>Nama File</th>
+                            <th>Ukuran</th>
+                            <th>Waktu</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="bill-backup-list">
+                        <tr><td colspan="4">Memuat...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 </section>
 
@@ -407,6 +433,10 @@ if (isset($currentUser) && is_array($currentUser)) {
     var backupImportBtn = document.getElementById('bill-backup-import');
     var backupFile = document.getElementById('bill-backup-file');
     var backupStatus = document.getElementById('bill-backup-status');
+    var backupReplace = document.getElementById('bill-backup-replace');
+    var backupList = document.getElementById('bill-backup-list');
+    var backupRefreshBtn = document.getElementById('bill-backup-refresh');
+    var backupDownloadLatest = document.getElementById('bill-backup-download-latest');
     var isAdminView = backupSection ? backupSection.dataset.admin === '1' : false;
 
     var modal = document.getElementById('bill-modal');
@@ -470,6 +500,43 @@ if (isset($currentUser) && is_array($currentUser)) {
         if (!backupStatus) return;
         backupStatus.textContent = msg || '';
         backupStatus.style.color = isError ? '#b91c1c' : '#0f172a';
+    }
+
+    function formatSize(bytes) {
+        var b = Number(bytes || 0);
+        if (b >= 1024 * 1024) return (b / (1024 * 1024)).toFixed(2) + ' MB';
+        if (b >= 1024) return (b / 1024).toFixed(2) + ' KB';
+        return b + ' B';
+    }
+
+    function loadBackupList() {
+        if (!backupList) return;
+        backupList.innerHTML = '<tr><td colspan="4">Memuat...</td></tr>';
+        fetch('payment_backup_list.php')
+            .then(function(res){ return res.json(); })
+            .then(function(json){
+                if (json.error) throw new Error(json.error);
+                var files = Array.isArray(json.files) ? json.files : [];
+                if (files.length === 0) {
+                    backupList.innerHTML = '<tr><td colspan="4">Belum ada backup.</td></tr>';
+                    return;
+                }
+                backupList.innerHTML = '';
+                files.forEach(function(item){
+                    var tr = document.createElement('tr');
+                    var name = item.name || '-';
+                    var time = item.mtime ? new Date(item.mtime * 1000).toLocaleString('id-ID') : '-';
+                    tr.innerHTML =
+                        '<td data-label="Nama File">' + name + '</td>' +
+                        '<td data-label="Ukuran">' + formatSize(item.size || 0) + '</td>' +
+                        '<td data-label="Waktu">' + time + '</td>' +
+                        '<td data-label="Aksi"><a class="ghost" href="payment_backup_download.php?file=' + encodeURIComponent(name) + '">Download</a></td>';
+                    backupList.appendChild(tr);
+                });
+            })
+            .catch(function(err){
+                backupList.innerHTML = '<tr><td colspan="4">Gagal memuat: ' + err.message + '</td></tr>';
+            });
     }
 
     function switchTab(name) {
@@ -961,7 +1028,8 @@ if (isset($currentUser) && is_array($currentUser)) {
             router_id: current.router_id,
             months: months,
             month: modalMonth && modalMonth.value ? modalMonth.value : '',
-            amount: overrideAmount > 0 ? overrideAmount : null
+            amount: overrideAmount > 0 ? overrideAmount : null,
+            backup_mode: backupReplace && backupReplace.checked ? 'replace' : 'new'
         };
         fetch('billing_action.php', {
             method: 'POST',
@@ -1012,6 +1080,14 @@ if (isset($currentUser) && is_array($currentUser)) {
             .catch(function(err){
                 setBackupStatus('Gagal import: ' + err.message, true);
             });
+    });
+    backupRefreshBtn && backupRefreshBtn.addEventListener('click', loadBackupList);
+    backupDownloadLatest && backupDownloadLatest.addEventListener('click', function(){
+        if (!backupList) return;
+        var first = backupList.querySelector('tr td a');
+        if (first && first.href) {
+            window.location.href = first.href;
+        }
     });
     clearMonthBtn && clearMonthBtn.addEventListener('click', function(){
         var targetMonth = monthInput && monthInput.value ? monthInput.value : '';
@@ -1087,6 +1163,9 @@ if (isset($currentUser) && is_array($currentUser)) {
         monthInput.addEventListener('change', fetchData);
     }
     fetchData();
+    if (backupSection && backupSection.dataset.admin === '1') {
+        loadBackupList();
+    }
 
     function buildReceiptUrl(payload) {
         var base = window.location.origin + window.location.pathname;

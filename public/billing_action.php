@@ -73,6 +73,7 @@ if ($action === 'pay') {
     $months = (int) ($input['months'] ?? 0);
     $monthField = isset($input['month']) && preg_match('/^\d{4}-\d{2}$/', $input['month']) ? $input['month'] : date('Y-m');
     $overrideAmount = isset($input['amount']) && $input['amount'] !== null ? (float)$input['amount'] : null;
+    $backupMode = isset($input['backup_mode']) ? strtolower(trim((string) $input['backup_mode'])) : 'new';
     $monthNum = substr($monthField, 5, 2);
     $yearNum = substr($monthField, 0, 4);
     if ($username === '' || $profile === '' || $routerId === '' || $months < 1) {
@@ -171,7 +172,7 @@ if ($action === 'pay') {
         'amount' => ($overrideAmount !== null ? $overrideAmount : $priceUsed),
         'paid_by' => (string) ($currentUser['name'] ?? ($currentUser['email'] ?? 'Unknown')),
         'paid_by_id' => $currentUser['id'] ?? null,
-    ]);
+    ], $backupMode);
 
     echo json_encode([
         'message' => 'Pembayaran tercatat',
@@ -275,7 +276,7 @@ function isAdmin(array $user): bool
     return in_array('*', $perms, true) || in_array('all', $perms, true);
 }
 
-function savePaymentBackup(array $billingData, array $historyGrouped, array $event): array
+function savePaymentBackup(array $billingData, array $historyGrouped, array $event, string $mode = 'new'): array
 {
     $baseDir = __DIR__ . '/../storage/payment_backups';
     if (!is_dir($baseDir)) {
@@ -283,12 +284,17 @@ function savePaymentBackup(array $billingData, array $historyGrouped, array $eve
             return ['ok' => false, 'error' => 'Gagal membuat folder backup'];
         }
     }
+    $mode = strtolower(trim($mode));
+    if (!in_array($mode, ['new', 'replace'], true)) {
+        $mode = 'new';
+    }
     $stamp = date('Ymd_His');
-    $filename = 'payment_backup_' . $stamp . '.json';
+    $filename = $mode === 'replace' ? 'payment_backup_latest.json' : ('payment_backup_' . $stamp . '.json');
     $path = $baseDir . '/' . $filename;
     $payload = [
         'version' => 1,
         'created_at' => date('c'),
+        'mode' => $mode,
         'event' => $event,
         'files' => [
             'billing.json' => $billingData,

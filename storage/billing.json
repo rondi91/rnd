@@ -396,5 +396,17 @@
         "last_payment_year": "2025",
         "last_paid_months": 1,
         "price": 150000
+    },
+    {
+        "username": "18.YANTI_RAMIJO@lLOR",
+        "profile": "UP TO 2M S1",
+        "router_id": "5",
+        "months_due": 0,
+        "status": "paid",
+        "last_payment": "2025-12-01",
+        "last_payment_month": "12",
+        "last_payment_year": "2025",
+        "last_paid_months": 1,
+        "price": 100000
     }
 ]
