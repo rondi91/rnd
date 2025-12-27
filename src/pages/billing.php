@@ -76,11 +76,12 @@ if (isset($currentUser) && is_array($currentUser)) {
             </label>
         </div>
         <div class="muted" id="bill-backup-status" style="margin-top:0.4rem;"></div>
-        <div style="margin-top:0.6rem;">
-            <div class="muted" style="margin-bottom:0.35rem;">File backup otomatis</div>
+            <div style="margin-top:0.6rem;">
+                <div class="muted" style="margin-bottom:0.35rem;">File backup otomatis</div>
             <div style="display:flex; gap:0.5rem; flex-wrap:wrap; align-items:center; margin-bottom:0.4rem;">
                 <button type="button" class="ghost" id="bill-backup-refresh">Refresh List</button>
                 <button type="button" class="ghost" id="bill-backup-download-latest">Download Terbaru</button>
+                <button type="button" class="ghost" id="bill-backup-delete-latest" style="border-color:#fca5a5; color:#b91c1c;">Delete Terbaru</button>
             </div>
             <div class="table-wrapper">
                 <table class="bill-table">
@@ -437,6 +438,7 @@ if (isset($currentUser) && is_array($currentUser)) {
     var backupList = document.getElementById('bill-backup-list');
     var backupRefreshBtn = document.getElementById('bill-backup-refresh');
     var backupDownloadLatest = document.getElementById('bill-backup-download-latest');
+    var backupDeleteLatest = document.getElementById('bill-backup-delete-latest');
     var isAdminView = backupSection ? backupSection.dataset.admin === '1' : false;
 
     var modal = document.getElementById('bill-modal');
@@ -500,6 +502,25 @@ if (isset($currentUser) && is_array($currentUser)) {
         if (!backupStatus) return;
         backupStatus.textContent = msg || '';
         backupStatus.style.color = isError ? '#b91c1c' : '#0f172a';
+    }
+
+    function loadBackupReplaceState() {
+        if (!backupReplace) return;
+        try {
+            var saved = localStorage.getItem('billing_backup_replace');
+            backupReplace.checked = saved === '1';
+        } catch (e) {
+            backupReplace.checked = false;
+        }
+    }
+
+    function saveBackupReplaceState() {
+        if (!backupReplace) return;
+        try {
+            localStorage.setItem('billing_backup_replace', backupReplace.checked ? '1' : '0');
+        } catch (e) {
+            // ignore storage errors
+        }
     }
 
     function formatSize(bytes) {
@@ -1089,6 +1110,31 @@ if (isset($currentUser) && is_array($currentUser)) {
             window.location.href = first.href;
         }
     });
+    backupDeleteLatest && backupDeleteLatest.addEventListener('click', function(){
+        if (!backupList) return;
+        var first = backupList.querySelector('tr td a');
+        if (!first || !first.href) {
+            setBackupStatus('Tidak ada backup untuk dihapus.', true);
+            return;
+        }
+        if (!confirm('Hapus file backup terbaru?')) return;
+        setBackupStatus('Menghapus backup terbaru...', false);
+        fetch('payment_backup_delete.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ file: 'latest' })
+        })
+            .then(function(res){ return res.json(); })
+            .then(function(json){
+                if (json.error) throw new Error(json.error);
+                setBackupStatus('Backup dihapus: ' + (json.deleted || ''), false);
+                loadBackupList();
+            })
+            .catch(function(err){
+                setBackupStatus('Gagal hapus: ' + err.message, true);
+            });
+    });
+    backupReplace && backupReplace.addEventListener('change', saveBackupReplaceState);
     clearMonthBtn && clearMonthBtn.addEventListener('click', function(){
         var targetMonth = monthInput && monthInput.value ? monthInput.value : '';
         if (!targetMonth) {
@@ -1164,6 +1210,7 @@ if (isset($currentUser) && is_array($currentUser)) {
     }
     fetchData();
     if (backupSection && backupSection.dataset.admin === '1') {
+        loadBackupReplaceState();
         loadBackupList();
     }
 
