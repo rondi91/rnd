@@ -58,7 +58,18 @@ if (isset($currentUser) && is_array($currentUser)) {
         </div>
     </div>
     <div id="bill-admin-section" style="display:none; margin-top:0.75rem;">
-        <div class="muted" style="margin-bottom:0.35rem;">Total admin bayar</div>
+        <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap; margin-bottom:0.35rem;">
+            <div class="muted">Total admin bayar</div>
+            <label style="display:inline-flex; align-items:center; gap:0.35rem;">
+                <span class="muted">Urutkan</span>
+                <select id="bill-admin-sort" style="padding:0.35rem 0.5rem;">
+                    <option value="total_desc" selected>Total terbanyak</option>
+                    <option value="total_asc">Total terkecil</option>
+                    <option value="name_asc">Nama A-Z</option>
+                    <option value="name_desc">Nama Z-A</option>
+                </select>
+            </label>
+        </div>
         <div id="bill-admin-totals" style="display:flex; gap:0.6rem; flex-wrap:wrap;"></div>
     </div>
     <div id="bill-backup-section" class="alert" data-admin="<?php echo $isAdminView ? '1' : '0'; ?>" style="display:<?php echo $isAdminView ? 'block' : 'none'; ?>; margin-top:0.75rem; background:#f8fafc; border-color:#e2e8f0; color:#0f172a;">
@@ -168,7 +179,9 @@ if (isset($currentUser) && is_array($currentUser)) {
                         <th>Harga</th>
                         <th>Terakhir Bayar</th>
                         <th>Bulan Dibayar</th>
-                        <th>Admin Bayar</th>
+                        <th id="bill-paid-sort" style="cursor:pointer; user-select:none;">
+                            Admin Bayar <span id="bill-paid-sort-indicator" class="muted">A-Z</span>
+                        </th>
                         <th>Aksi</th>
                     </tr>
                 </thead>
@@ -429,6 +442,7 @@ if (isset($currentUser) && is_array($currentUser)) {
     var currentPage = { unpaid: 1, paid: 1 };
     var adminSection = document.getElementById('bill-admin-section');
     var adminTotals = document.getElementById('bill-admin-totals');
+    var adminSort = document.getElementById('bill-admin-sort');
     var backupSection = document.getElementById('bill-backup-section');
     var backupExportBtn = document.getElementById('bill-backup-export');
     var backupImportBtn = document.getElementById('bill-backup-import');
@@ -439,6 +453,8 @@ if (isset($currentUser) && is_array($currentUser)) {
     var backupRefreshBtn = document.getElementById('bill-backup-refresh');
     var backupDownloadLatest = document.getElementById('bill-backup-download-latest');
     var backupDeleteLatest = document.getElementById('bill-backup-delete-latest');
+    var paidSortTh = document.getElementById('bill-paid-sort');
+    var paidSortIndicator = document.getElementById('bill-paid-sort-indicator');
     var isAdminView = backupSection ? backupSection.dataset.admin === '1' : false;
 
     var modal = document.getElementById('bill-modal');
@@ -774,10 +790,30 @@ if (isset($currentUser) && is_array($currentUser)) {
         });
     }
 
+    var paidSort = { dir: 'asc' };
+
+    function applyPaidSort(list) {
+        if (!Array.isArray(list)) return [];
+        var sorted = list.slice(0);
+        var dir = paidSort.dir === 'desc' ? 'desc' : 'asc';
+        sorted.sort(function(a, b){
+            var nameA = String(a.paid_by || '').toLowerCase();
+            var nameB = String(b.paid_by || '').toLowerCase();
+            var cmp = nameA.localeCompare(nameB);
+            return dir === 'desc' ? -cmp : cmp;
+        });
+        return sorted;
+    }
+
+    function updatePaidSortIndicator() {
+        if (!paidSortIndicator) return;
+        paidSortIndicator.textContent = paidSort.dir === 'desc' ? 'Z-A' : 'A-Z';
+    }
+
     function render(json) {
         var filtered = applyFilters(json.unpaid || [], json.paid || []);
         var unpaid = filtered.unpaid;
-        var paid = filtered.paid;
+        var paid = applyPaidSort(filtered.paid || []);
         var pageSize = getPageSize();
         var totalUnpaidPages = Math.max(1, Math.ceil(unpaid.length / pageSize));
         var totalPaidPages = Math.max(1, Math.ceil(paid.length / pageSize));
@@ -881,7 +917,25 @@ if (isset($currentUser) && is_array($currentUser)) {
         }
         adminSection.style.display = 'block';
         adminTotals.innerHTML = '';
-        list.forEach(function(item){
+        var sorted = list.slice(0);
+        var mode = adminSort ? adminSort.value : 'total_desc';
+        sorted.sort(function(a, b){
+            var nameA = String(a.name || '').toLowerCase();
+            var nameB = String(b.name || '').toLowerCase();
+            var totalA = Number(a.total || 0);
+            var totalB = Number(b.total || 0);
+            if (mode === 'name_asc') {
+                return nameA.localeCompare(nameB);
+            }
+            if (mode === 'name_desc') {
+                return nameB.localeCompare(nameA);
+            }
+            if (mode === 'total_asc') {
+                return totalA - totalB;
+            }
+            return totalB - totalA;
+        });
+        sorted.forEach(function(item){
             var box = document.createElement('div');
             box.className = 'metric-box';
             box.innerHTML = '<div class="label">' + (item.name || '-') + '</div>' +
@@ -1135,6 +1189,11 @@ if (isset($currentUser) && is_array($currentUser)) {
             });
     });
     backupReplace && backupReplace.addEventListener('change', saveBackupReplaceState);
+    paidSortTh && paidSortTh.addEventListener('click', function(){
+        paidSort.dir = paidSort.dir === 'asc' ? 'desc' : 'asc';
+        updatePaidSortIndicator();
+        if (lastData) render(lastData);
+    });
     clearMonthBtn && clearMonthBtn.addEventListener('click', function(){
         var targetMonth = monthInput && monthInput.value ? monthInput.value : '';
         if (!targetMonth) {
@@ -1200,8 +1259,12 @@ if (isset($currentUser) && is_array($currentUser)) {
             render(lastData);
         }
     });
+    adminSort && adminSort.addEventListener('change', function(){
+        if (lastData) renderAdminTotals(lastData);
+    });
 
     switchTab('unpaid');
+    updatePaidSortIndicator();
     // set default bulan = sekarang
     if (monthInput && !monthInput.value) {
         var now = new Date();
