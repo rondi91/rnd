@@ -126,6 +126,7 @@ $printedAt = date('Y-m-d H:i:s');
             border-radius: 14px;
             padding: 20px;
             box-shadow: 0 12px 30px rgba(0,0,0,0.08);
+            position: relative;
         }
         .receipt h1 {
             margin: 0;
@@ -185,6 +186,48 @@ $printedAt = date('Y-m-d H:i:s');
             display: flex;
             gap: 8px;
         }
+        .stamp {
+            position: absolute;
+            right: 20px;
+            bottom: 18px;
+            width: 170px;
+            height: 170px;
+            border: 3px solid #16a34a;
+            color: #166534;
+            border-radius: 999px;
+            transform: rotate(-8deg);
+            background: rgba(22, 163, 74, 0.08);
+            box-shadow: 0 6px 14px rgba(22, 163, 74, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+        .stamp::before {
+            content: "";
+            position: absolute;
+            inset: 26px;
+            border: 2px solid #16a34a;
+            border-radius: 999px;
+            opacity: 0.9;
+        }
+        .stamp-title {
+            font-size: 1.1rem;
+            font-weight: 900;
+            letter-spacing: 0.45em;
+            text-transform: uppercase;
+            padding-left: 0.45em;
+        }
+        .stamp-ring {
+            position: absolute;
+            inset: 6px;
+            pointer-events: none;
+        }
+        .stamp-ring text {
+            font-size: 12px;
+            letter-spacing: 0.2em;
+            font-weight: 900;
+        }
         button {
             cursor: pointer;
             border: none;
@@ -202,14 +245,30 @@ $printedAt = date('Y-m-d H:i:s');
         @media print {
             body { background: #fff; }
             .wrap { padding: 0; }
-            .receipt { box-shadow: none; border: none; }
-            .actions { display: none; }
+        .receipt { box-shadow: none; border: none; }
+        .actions { display: none; }
+        .stamp { opacity: 0.7; }
         }
     </style>
 </head>
 <body>
     <div class="wrap">
         <div class="receipt">
+            <?php if ($record): ?>
+                <div class="stamp">
+                    <svg class="stamp-ring" viewBox="0 0 120 120" aria-hidden="true">
+                        <defs>
+                            <path id="stamp-circle" d="M60,10 a50,50 0 1,1 0,100 a50,50 0 1,1 0,-100" />
+                        </defs>
+                        <text fill="#166534">
+                            <textPath href="#stamp-circle" startOffset="50%" text-anchor="middle">
+                                RND NET • RND NET • RND NET • RND NET •
+                            </textPath>
+                        </text>
+                    </svg>
+                    <div class="stamp-title">Lunas</div>
+                </div>
+            <?php endif; ?>
             <h1>Nota Pembayaran</h1>
             <div class="meta">No: <?php echo htmlspecialchars($invoiceId); ?> | Dicetak: <?php echo htmlspecialchars($printedAt); ?></div>
             <div class="divider"></div>

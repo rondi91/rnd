@@ -31,6 +31,10 @@ if (isset($currentUser) && is_array($currentUser)) {
                 <div class="value" id="bill-total-this-month">Rp 0</div>
             </div>
             <div class="metric-box">
+                <div class="label">Kurang Bayar (Bulan Ini)</div>
+                <div class="value" id="bill-total-short">Rp 0</div>
+            </div>
+            <div class="metric-box">
                 <div class="label">Lunas</div>
                 <div class="value" id="bill-total-paid">0 user</div>
             </div>
@@ -420,6 +424,7 @@ if (isset($currentUser) && is_array($currentUser)) {
     var unpaidBody = document.getElementById('bill-unpaid-body');
     var paidBody = document.getElementById('bill-paid-body');
     var totalThisMonth = document.getElementById('bill-total-this-month');
+    var totalShort = document.getElementById('bill-total-short');
     var totalPaid = document.getElementById('bill-total-paid');
     var totalUnpaid = document.getElementById('bill-total-unpaid');
     var monthInput = document.getElementById('bill-month');
@@ -887,6 +892,7 @@ if (isset($currentUser) && is_array($currentUser)) {
             }
         }
         if (totalThisMonth) totalThisMonth.textContent = fmt(json.total_this_month || 0);
+        if (totalShort) totalShort.textContent = fmt(json.total_unpaid_amount || 0);
         if (totalPaid) totalPaid.textContent = (paid.length || 0) + ' user';
         if (totalUnpaid) totalUnpaid.textContent = (unpaid.length || 0) + ' user';
         var totalAllBox = document.getElementById('bill-total-all');

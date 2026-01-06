@@ -94,5 +94,16 @@
             "billing:WETAN"
         ],
         "id": 8
+    },
+    {
+        "name": "kelik",
+        "email": "kelik@gmail.com",
+        "status": "aktif",
+        "password": "kelik",
+        "role": "Teknisi",
+        "permissions": [
+            "wireless"
+        ],
+        "id": 9
     }
 ]

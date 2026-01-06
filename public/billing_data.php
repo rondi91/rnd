@@ -121,6 +121,7 @@ foreach (($pppoeData['inactive_users'] ?? []) as $row) {
 $paid = [];
 $unpaid = [];
 $totalThisMonth = 0;
+$totalUnpaidAmount = 0;
 $paidByTotals = [];
 
 // indeks riwayat pembayaran per user+profile+router per bulan
@@ -231,6 +232,12 @@ $unpaid = array_values(array_filter($unpaid, function($row){
     $months = (int)($row['months_due'] ?? 0);
     return ($price * max(1, $months)) > 0;
 }));
+$totalUnpaidAmount = 0;
+foreach ($unpaid as $row) {
+    $price = (float)($row['price'] ?? 0);
+    $months = (int)($row['months_due'] ?? 0);
+    $totalUnpaidAmount += $price * max(1, $months);
+}
 $paid = array_values(array_filter($paid, function($row){
     $price = (float)($row['price'] ?? 0);
     $months = (int)($row['last_paid_months'] ?? 0);
@@ -252,6 +259,7 @@ echo json_encode([
     'paid' => $paid,
     'unpaid' => $unpaid,
     'total_this_month' => $totalThisMonth,
+    'total_unpaid_amount' => $totalUnpaidAmount,
     'locations' => array_values(array_keys($locationsSet)),
     'paid_by_totals' => buildPaidByTotals($paidByTotals),
     'is_admin' => $isAdmin,
