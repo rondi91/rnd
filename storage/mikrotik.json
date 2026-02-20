@@ -228,11 +228,51 @@
     {
         "id": 26,
         "name": "omni",
-        "host": "172.16.30.176",
+        "host": "172.16.30.243",
         "location": "ULFA",
         "username": "rondi",
         "password": "21184662",
         "notes": "from PPPoE aktif",
         "category": "ap"
+    },
+    {
+        "id": 27,
+        "name": "APKA2",
+        "host": "172.16.40.33",
+        "location": "KAUMAN",
+        "username": "rondi",
+        "password": "21184662",
+        "notes": "from PPPoE aktif",
+        "category": "ap"
+    },
+    {
+        "id": 28,
+        "name": "APKA3",
+        "host": "172.16.40.32",
+        "location": "KAUMAN",
+        "username": "rondi",
+        "password": "21184662",
+        "notes": "from PPPoE aktif",
+        "category": "ap"
+    },
+    {
+        "id": 29,
+        "name": "apkaumanngalor",
+        "host": "172.16.40.31",
+        "location": "KAUMAN",
+        "username": "rondi",
+        "password": "21184662",
+        "notes": "from PPPoE aktif",
+        "category": "ap"
+    },
+    {
+        "name": "SERVER GR3_NEW",
+        "host": "192.168.255.34",
+        "location": "TRIANGLE",
+        "category": "SERVER",
+        "notes": "SERVER GR3",
+        "username": "rondi",
+        "password": "21184662",
+        "id": 30
     }
 ]

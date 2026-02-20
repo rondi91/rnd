@@ -133,23 +133,6 @@ foreach ($history as $h) {
     if (!isset($historyMap[$key])) $historyMap[$key] = [];
     $historyMap[$key][$month] = $h;
 }
-// hitung total per admin dari history yang sudah ter-dedupe per user+bulan
-foreach ($historyMap as $months) {
-    if (!isset($months[$targetMonth])) continue;
-    $h = $months[$targetMonth];
-    $name = (string) ($h['paid_by'] ?? 'Unknown');
-    $nameKey = strtolower(trim($name));
-    if (!$isAdmin) {
-        if ($nameKey === '') continue;
-        if ($currentName === '' && $currentEmail === '') continue;
-        if ($nameKey !== $currentName && $nameKey !== $currentEmail) continue;
-    }
-    $priceH = (float) ($h['price'] ?? 0);
-    $monthsH = (int) ($h['months_paid'] ?? ($h['last_paid_months'] ?? 1));
-    if (!isset($paidByTotals[$name])) $paidByTotals[$name] = 0;
-    $paidByTotals[$name] += $priceH * max(1, $monthsH);
-}
-
 foreach ($allUsers as $uname => $info) {
     $profile = $info['profile'] ?? '';
     $rid = $info['router_id'] ?? '';
@@ -199,9 +182,6 @@ foreach ($allUsers as $uname => $info) {
             'last_paid_months' => $monthsH,
             'paid_by' => $historyHit['paid_by'] ?? '',
         ];
-        if ($targetMonth === ($historyHit['month'] ?? '')) {
-            $totalThisMonth += $priceH * max(1, $monthsH);
-        }
     } else {
         // hitung label bulan tunggakan
         $monthsList = [];
@@ -254,6 +234,26 @@ $paid = array_values(array_filter($paid, function($p) use ($unpaidKeys){
     $key = $p['username'] . '|' . $p['profile'] . '|' . $p['router_id'];
     return !isset($unpaidKeys[$key]);
 }));
+
+// Samakan sumber hitung: total bulan ini dan total admin bayar dihitung dari daftar paid final
+$totalThisMonth = 0;
+$paidByTotals = [];
+foreach ($paid as $row) {
+    $price = (float)($row['price'] ?? 0);
+    $months = (int)($row['last_paid_months'] ?? 1);
+    $amount = $price * max(1, $months);
+    $totalThisMonth += $amount;
+
+    $name = (string) ($row['paid_by'] ?? 'Unknown');
+    $nameKey = strtolower(trim($name));
+    if (!$isAdmin) {
+        if ($nameKey === '') continue;
+        if ($currentName === '' && $currentEmail === '') continue;
+        if ($nameKey !== $currentName && $nameKey !== $currentEmail) continue;
+    }
+    if (!isset($paidByTotals[$name])) $paidByTotals[$name] = 0;
+    $paidByTotals[$name] += $amount;
+}
 
 echo json_encode([
     'paid' => $paid,

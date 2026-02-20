@@ -47,6 +47,7 @@
         "role": "kasir",
         "permissions": [
             "billing",
+            "billing:DS",
             "billing:DUNGSARI",
             "billing:KARANGGENENG",
             "billing:KARANGJATI",
