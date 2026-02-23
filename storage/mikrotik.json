@@ -1,6 +1,6 @@
 [
     {
-        "name": "SERVER 2 40.1",
+        "name": "SERVER_2 40.1",
         "host": "192.168.255.26",
         "location": "TRIANGLE",
         "notes": "",
@@ -8,10 +8,13 @@
         "username": "rondi",
         "password": "21184662",
         "id": 4,
-        "traffic_interface": "<pppoe-2.SISWATI@LOR>"
+        "traffic_interface": "<pppoe-2.SISWATI@LOR>",
+        "pppoe_account": "",
+        "source_server_id": "",
+        "source_server_name": ""
     },
     {
-        "name": "SERVER 1 30.1",
+        "name": "SERVER_1 30.1",
         "host": "192.168.255.21",
         "location": "TRIANGLE",
         "category": "SERVER",
@@ -19,7 +22,10 @@
         "username": "rondi",
         "password": "21184662",
         "id": 5,
-        "traffic_interface": "ether4 - IN  GR3 OLD"
+        "traffic_interface": "ether4 - IN  GR3 OLD",
+        "pppoe_account": "",
+        "source_server_id": "",
+        "source_server_name": ""
     },
     {
         "id": 6,
@@ -157,12 +163,15 @@
     {
         "id": 19,
         "name": "PTPDS@DS",
-        "host": "172.16.40.30",
+        "host": "172.16.50.30",
         "location": "TRIANGLE",
         "username": "rondi",
         "password": "21184662",
         "notes": "from PPPoE aktif",
-        "category": "ap"
+        "category": "ap",
+        "pppoe_account": "PTPDS@DS",
+        "source_server_id": "30",
+        "source_server_name": "SERVER GR3_NEW"
     },
     {
         "id": 20,
@@ -266,13 +275,29 @@
         "category": "ap"
     },
     {
-        "name": "SERVER GR3_NEW",
+        "name": "SERVER_3 GR3_NEW",
         "host": "192.168.255.34",
         "location": "TRIANGLE",
         "category": "SERVER",
         "notes": "SERVER GR3",
         "username": "rondi",
         "password": "21184662",
-        "id": 30
+        "id": 30,
+        "pppoe_account": "",
+        "source_server_id": "",
+        "source_server_name": ""
+    },
+    {
+        "id": 31,
+        "name": "ap_atik@ap",
+        "host": "172.16.50.17",
+        "location": "ATIK",
+        "username": "rondi",
+        "password": "21184662",
+        "notes": "from PPPoE aktif",
+        "category": "ap",
+        "pppoe_account": "ap_atik@ap",
+        "source_server_id": "30",
+        "source_server_name": "SERVER GR3_NEW"
     }
 ]

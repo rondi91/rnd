@@ -17,6 +17,10 @@ return [
         'title' => 'PPPoE Active',
         'file' => __DIR__ . '/pages/pppoe.php',
     ],
+    'manage_pppoe' => [
+        'title' => 'Manage PPPoE',
+        'file' => __DIR__ . '/pages/manage_pppoe.php',
+    ],
     'traffic' => [
         'title' => 'Traffic',
         'file' => __DIR__ . '/pages/traffic.php',

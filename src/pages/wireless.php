@@ -64,6 +64,7 @@ sort($locationOptions, SORT_NATURAL | SORT_FLAG_CASE);
         <span id="wireless-reg-status" class="muted"></span>
     </div>
     <div id="wireless-reg-errors" class="alert" style="display:none; margin-bottom:0.5rem;"></div>
+    <div id="wireless-reg-failed" class="alert" style="display:none; margin-bottom:0.5rem;"></div>
     <div id="wireless-reg-container" class="reg-container"></div>
 </section>
 
@@ -303,6 +304,7 @@ sort($locationOptions, SORT_NATURAL | SORT_FLAG_CASE);
     var regRefresh = document.getElementById('wireless-reg-refresh');
     var regStatus = document.getElementById('wireless-reg-status');
     var regErrors = document.getElementById('wireless-reg-errors');
+    var regFailed = document.getElementById('wireless-reg-failed');
     var regContainer = document.getElementById('wireless-reg-container');
     var regInterval = document.getElementById('wireless-reg-interval');
     var regTimer = null;
@@ -310,11 +312,17 @@ sort($locationOptions, SORT_NATURAL | SORT_FLAG_CASE);
     var locationFilter = document.getElementById('wireless-location-filter');
     var regData = null;
     var regFilterTimer = null;
+    var selectedPppoeAccount = '';
+    var selectedSourceServerId = '';
+    var selectedSourceServerName = '';
 
     function openModal() {
         if (!modal) return;
         modal.style.display = 'flex';
         statusBox.textContent = '';
+        selectedPppoeAccount = '';
+        selectedSourceServerId = '';
+        selectedSourceServerName = '';
         nameInput.value = '';
         hostInput.value = '';
         locInput.value = '';
@@ -350,6 +358,8 @@ sort($locationOptions, SORT_NATURAL | SORT_FLAG_CASE);
             locInput.value = srv.location || '';
             userInput.value = srv.username || '';
             passInput.value = srv.password || '';
+            selectedSourceServerId = String(srv.id || rid || '');
+            selectedSourceServerName = srv.name || '';
         }
     });
 
@@ -362,7 +372,14 @@ sort($locationOptions, SORT_NATURAL | SORT_FLAG_CASE);
             password: passInput.value.trim(),
             notes: notesInput.value.trim(),
             category: 'ap',
-            router_id: serverSelect ? serverSelect.value : ''
+            router_id: serverSelect ? serverSelect.value : '',
+            pppoe_account: selectedPppoeAccount || '',
+            source_server_id: selectedSourceServerId || (serverSelect ? (serverSelect.value || '') : ''),
+            source_server_name: selectedSourceServerName || (
+                serverSelect && serverSelect.value && serversMap[serverSelect.value]
+                    ? (serversMap[serverSelect.value].name || '')
+                    : ''
+            )
         };
         if (!payload.name || !payload.host) {
             statusBox.textContent = 'Nama dan Host/IP wajib diisi.';
@@ -488,6 +505,9 @@ sort($locationOptions, SORT_NATURAL | SORT_FLAG_CASE);
                 userInput.value = 'rondi';
                 passInput.value = '21184662';
                 notesInput.value = 'from PPPoE ' + item.status.toLowerCase();
+                selectedPppoeAccount = item.username || '';
+                selectedSourceServerId = item.routerId || '';
+                selectedSourceServerName = item.router || '';
                 if (serverSelect && item.routerId && serversMap[item.routerId]) {
                     serverSelect.value = item.routerId;
                 }
@@ -528,14 +548,39 @@ sort($locationOptions, SORT_NATURAL | SORT_FLAG_CASE);
                 regData = json;
                 renderRegister(regData);
                 var errCount = (json.errors && json.errors.length) ? json.errors.length : 0;
+                var failedRouters = Array.isArray(json.failed_routers) ? json.failed_routers : [];
+                var totalRouters = json.summary && json.summary.total_router ? json.summary.total_router : 0;
+                var okRouters = json.summary && json.summary.ok_router ? json.summary.ok_router : 0;
                 if (regStatus) {
-                    var err = errCount ? ' (' + errCount + ' error)' : '';
-                    regStatus.textContent = 'Memuat ' + ((json.data && json.data.length) || 0) + ' client' + err;
+                    var extra = totalRouters
+                        ? (' dari ' + okRouters + '/' + totalRouters + ' router')
+                        : '';
+                    var err = failedRouters.length ? ' (' + failedRouters.length + ' error)' : '';
+                    regStatus.textContent = 'Memuat ' + ((json.data && json.data.length) || 0) + ' client' + extra + err;
+                }
+                if (regFailed) {
+                    if (failedRouters.length > 0) {
+                        regFailed.style.display = 'block';
+                        regFailed.innerHTML =
+                            '<div><strong>Router error / tidak bisa terhubung:</strong></div>' +
+                            failedRouters.map(function(row){
+                                var name = row.name || row.host || '-';
+                                var host = row.host ? (' (' + row.host + ')') : '';
+                                var location = row.location ? (' [' + row.location + ']') : '';
+                                var reason = row.reason || 'Unknown error';
+                                return '<div>' + escapeHtml(name + host + location + ': ' + reason) + '</div>';
+                            }).join('');
+                    } else {
+                        regFailed.style.display = 'none';
+                        regFailed.innerHTML = '';
+                    }
                 }
                 if (regErrors) {
                     if (errCount) {
                         regErrors.style.display = 'block';
-                        regErrors.innerHTML = json.errors.map(function(e){ return '<div>' + escapeHtml(e) + '</div>'; }).join('');
+                        regErrors.innerHTML = '<details><summary>Detail error</summary>' +
+                            json.errors.map(function(e){ return '<div>' + escapeHtml(e) + '</div>'; }).join('') +
+                            '</details>';
                     } else {
                         regErrors.style.display = 'none';
                         regErrors.innerHTML = '';
@@ -546,6 +591,7 @@ sort($locationOptions, SORT_NATURAL | SORT_FLAG_CASE);
                 if (regStatus) regStatus.textContent = 'Gagal memuat: ' + err.message;
                 if (regContainer) regContainer.innerHTML = '<div>Gagal memuat: ' + err.message + '</div>';
                 if (regErrors) { regErrors.style.display = 'none'; regErrors.innerHTML = ''; }
+                if (regFailed) { regFailed.style.display = 'none'; regFailed.innerHTML = ''; }
             });
     }
 

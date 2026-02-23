@@ -23,6 +23,9 @@ $username = trim($input['username'] ?? '');
 $password = trim($input['password'] ?? '');
 $notes = trim($input['notes'] ?? '');
 $category = trim($input['category'] ?? 'ap');
+$pppoeAccount = trim($input['pppoe_account'] ?? '');
+$sourceServerId = trim((string) ($input['source_server_id'] ?? ''));
+$sourceServerName = trim((string) ($input['source_server_name'] ?? ''));
 
 if ($name === '' || $host === '') {
     http_response_code(400);
@@ -47,6 +50,9 @@ $new = [
     'password' => $password,
     'notes' => $notes,
     'category' => $category !== '' ? $category : 'ap',
+    'pppoe_account' => $pppoeAccount,
+    'source_server_id' => $sourceServerId,
+    'source_server_name' => $sourceServerName,
 ];
 
 $data[] = $new;

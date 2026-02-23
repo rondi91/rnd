@@ -24,7 +24,10 @@ $categories = array_values(array_unique($categories));
             <h2 style="margin:0;">Daftar Router</h2>
             <p class="muted" style="margin:0.25rem 0 0;">Kelola data dari storage/mikrotik.json</p>
         </div>
-        <button type="button" id="open-router-modal">Tambah Router</button>
+        <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+            <button type="button" class="ghost" id="sync-ip-pppoe">Sync IP dari PPPoE</button>
+            <button type="button" id="open-router-modal">Tambah Router</button>
+        </div>
     </div>
     <div id="add-router-result" class="alert" style="display:none; margin-top:0.75rem;"></div>
 </section>
@@ -33,7 +36,7 @@ $categories = array_values(array_unique($categories));
     <div style="margin:0.4rem 0 0.75rem; display:flex; gap:0.6rem; flex-wrap:wrap; align-items:center;">
         <label style="display:flex; align-items:center; gap:0.35rem;">
             <span>Cari (live)</span>
-            <input type="search" id="mikrotik-search" placeholder="nama / host / lokasi / kategori / user">
+            <input type="search" id="mikrotik-search" placeholder="nama / host / lokasi / kategori / pppoe / server">
         </label>
         <span class="muted" style="font-size:0.9rem;">Ketik untuk memfilter daftar tanpa reload.</span>
     </div>
@@ -44,8 +47,10 @@ $categories = array_values(array_unique($categories));
                     <th>ID</th>
                     <th>Nama Router</th>
                     <th>IP / Host</th>
-                    <th>Lokasi <button type="button" class="ghost" id="sort-location" style="padding:0.25rem 0.5rem; font-size:0.85rem;">⇅</button></th>
+                    <th>Lokasi <button type="button" class="ghost" id="sort-location" style="padding:0.25rem 0.5rem; font-size:0.85rem;">up/down</button></th>
                     <th>Kategori</th>
+                    <th>Akun PPPoE</th>
+                    <th>Server Sumber</th>
                     <th>Username</th>
                     <th>Password</th>
                     <th>Catatan</th>
@@ -54,7 +59,7 @@ $categories = array_values(array_unique($categories));
             </thead>
             <tbody id="mikrotik-table-body">
                 <?php if (count($routers) === 0): ?>
-                    <tr><td colspan="9">Belum ada data. Klik "Tambah Router".</td></tr>
+                    <tr><td colspan="11">Belum ada data. Klik "Tambah Router".</td></tr>
                 <?php else: ?>
                     <?php foreach ($routers as $row): ?>
                         <tr
@@ -63,6 +68,9 @@ $categories = array_values(array_unique($categories));
                             data-host="<?php echo htmlspecialchars($row['host']); ?>"
                             data-location="<?php echo htmlspecialchars($row['location']); ?>"
                             data-category="<?php echo htmlspecialchars($row['category'] ?? ''); ?>"
+                            data-pppoe-account="<?php echo htmlspecialchars($row['pppoe_account'] ?? ''); ?>"
+                            data-source-server-id="<?php echo htmlspecialchars($row['source_server_id'] ?? ''); ?>"
+                            data-source-server-name="<?php echo htmlspecialchars($row['source_server_name'] ?? ''); ?>"
                             data-username="<?php echo htmlspecialchars($row['username'] ?? ''); ?>"
                             data-password="<?php echo htmlspecialchars($row['password'] ?? ''); ?>"
                             data-notes="<?php echo htmlspecialchars($row['notes']); ?>"
@@ -80,6 +88,14 @@ $categories = array_values(array_unique($categories));
                             </td>
                             <td data-label="Lokasi"><?php echo htmlspecialchars($row['location']); ?></td>
                             <td data-label="Kategori"><?php echo htmlspecialchars($row['category'] ?? ''); ?></td>
+                            <td data-label="Akun PPPoE"><?php echo htmlspecialchars($row['pppoe_account'] ?? ''); ?></td>
+                            <td data-label="Server Sumber">
+                                <?php
+                                    $sourceName = trim((string)($row['source_server_name'] ?? ''));
+                                    $sourceId = trim((string)($row['source_server_id'] ?? ''));
+                                    echo htmlspecialchars($sourceName !== '' ? $sourceName : $sourceId);
+                                ?>
+                            </td>
                             <td data-label="Username"><?php echo htmlspecialchars($row['username'] ?? ''); ?></td>
                             <td data-label="Password"><?php echo htmlspecialchars($row['password'] ?? ''); ?></td>
                             <td data-label="Catatan"><?php echo htmlspecialchars($row['notes']); ?></td>
@@ -90,7 +106,7 @@ $categories = array_values(array_unique($categories));
                         </tr>
                     <?php endforeach; ?>
                 <?php endif; ?>
-                <tr id="mikrotik-no-match" style="display:none;"><td colspan="9">Tidak ada hasil untuk pencarian.</td></tr>
+                <tr id="mikrotik-no-match" style="display:none;"><td colspan="11">Tidak ada hasil untuk pencarian.</td></tr>
             </tbody>
         </table>
     </div>
@@ -103,7 +119,7 @@ GET    /public/api.php?resource=mikrotik&id=1
 POST   /public/api.php?resource=mikrotik
 PUT    /public/api.php?resource=mikrotik&id=1
 DELETE /public/api.php?resource=mikrotik&id=1</code></pre>
-    <p class="muted">Body JSON: {"name": "Core Router", "host": "10.0.0.1", "location": "DC-1", "category": "core", "username": "admin", "password": "secret", "notes": "Main uplink"}</p>
+    <p class="muted">Body JSON: {"name": "Core Router", "host": "10.0.0.1", "location": "DC-1", "category": "core", "pppoe_account": "user@lokasi", "source_server_id": "4", "source_server_name": "SERVER 2 40.1", "username": "admin", "password": "secret", "notes": "Main uplink"}</p>
 </section>
 
 <style>
@@ -190,6 +206,18 @@ DELETE /public/api.php?resource=mikrotik&id=1</code></pre>
                 <span>Password</span>
                 <input type="password" id="router-password" placeholder="********">
             </label>
+            <label class="field">
+                <span>Akun PPPoE</span>
+                <input type="text" id="router-pppoe-account" placeholder="contoh: user@lokasi">
+            </label>
+            <label class="field">
+                <span>Server Sumber (ID)</span>
+                <input type="text" id="router-source-server-id" placeholder="contoh: 4">
+            </label>
+            <label class="field" style="grid-column:1/-1;">
+                <span>Server Sumber (Nama)</span>
+                <input type="text" id="router-source-server-name" placeholder="contoh: SERVER 2 40.1">
+            </label>
             <label class="field" style="grid-column:1/-1;">
                 <span>Catatan</span>
                 <input type="text" id="router-notes" placeholder="Uplink utama">
@@ -211,6 +239,7 @@ DELETE /public/api.php?resource=mikrotik&id=1</code></pre>
     var categoryNew = document.getElementById('category-new');
     var categoryNewWrapper = document.getElementById('category-new-wrapper');
     var openModalBtn = document.getElementById('open-router-modal');
+    var syncIpBtn = document.getElementById('sync-ip-pppoe');
     var modal = document.getElementById('router-modal');
     var modalTitle = document.getElementById('router-modal-title');
     var modalSave = document.getElementById('router-modal-save');
@@ -221,6 +250,9 @@ DELETE /public/api.php?resource=mikrotik&id=1</code></pre>
     var inputLocation = document.getElementById('router-location');
     var inputUsername = document.getElementById('router-username');
     var inputPassword = document.getElementById('router-password');
+    var inputPppoeAccount = document.getElementById('router-pppoe-account');
+    var inputSourceServerId = document.getElementById('router-source-server-id');
+    var inputSourceServerName = document.getElementById('router-source-server-name');
     var inputNotes = document.getElementById('router-notes');
     var sortLocationBtn = document.getElementById('sort-location');
     var searchInput = document.getElementById('mikrotik-search');
@@ -244,6 +276,9 @@ DELETE /public/api.php?resource=mikrotik&id=1</code></pre>
 
     openModalBtn && openModalBtn.addEventListener('click', function(){
         openModal();
+    });
+    syncIpBtn && syncIpBtn.addEventListener('click', function(){
+        syncIpFromPppoe();
     });
 
     modalCancel && modalCancel.addEventListener('click', closeModal);
@@ -301,6 +336,9 @@ DELETE /public/api.php?resource=mikrotik&id=1</code></pre>
             category: categoryValue,
             username: inputUsername.value || '',
             password: inputPassword.value || '',
+            pppoe_account: inputPppoeAccount.value || '',
+            source_server_id: inputSourceServerId.value || '',
+            source_server_name: inputSourceServerName.value || '',
             notes: inputNotes.value || ''
         };
         if (!payload.name || !payload.host) {
@@ -348,6 +386,9 @@ DELETE /public/api.php?resource=mikrotik&id=1</code></pre>
             host: row.dataset.host || '',
             location: row.dataset.location || '',
             category: row.dataset.category || '',
+            pppoe_account: row.dataset.pppoeAccount || '',
+            source_server_id: row.dataset.sourceServerId || '',
+            source_server_name: row.dataset.sourceServerName || '',
             username: row.dataset.username || '',
             password: row.dataset.password || '',
             notes: row.dataset.notes || ''
@@ -368,11 +409,40 @@ DELETE /public/api.php?resource=mikrotik&id=1</code></pre>
             });
     }
 
+    function syncIpFromPppoe() {
+        if (!confirm('Sinkronkan IP host router berdasarkan akun PPPoE sekarang?')) return;
+        showResult('Sinkronisasi IP dari PPPoE sedang berjalan...', false);
+        fetch('mikrotik_sync_ip.php', { method: 'POST' })
+            .then(function(res){ return res.json(); })
+            .then(function(json){
+                if (json.error) throw new Error(json.error);
+                var notFound = Array.isArray(json.not_found) ? json.not_found : [];
+                var notMatchedServer = Array.isArray(json.not_matched_server) ? json.not_matched_server : [];
+                var msg = 'Sinkron selesai. Dicek: ' + (json.checked || 0) + ', Diupdate: ' + (json.updated || 0);
+                if (notFound.length > 0) {
+                    msg += '. Tidak ditemukan: ' + notFound.slice(0, 5).join(', ');
+                    if (notFound.length > 5) msg += ' +' + (notFound.length - 5) + ' lagi';
+                }
+                if (notMatchedServer.length > 0) {
+                    msg += '. Server tidak cocok: ' + notMatchedServer.slice(0, 5).join(', ');
+                    if (notMatchedServer.length > 5) msg += ' +' + (notMatchedServer.length - 5) + ' lagi';
+                }
+                showResult(msg, false);
+                setTimeout(function(){ window.location.reload(); }, 350);
+            })
+            .catch(function(err){
+                showResult('Gagal sinkron: ' + err.message, true);
+            });
+    }
+
     function fillForm(data) {
         inputName.value = data.name || '';
         inputHost.value = data.host || '';
         inputLocation.value = data.location || '';
         setCategoryValue(data.category || '');
+        inputPppoeAccount.value = data.pppoe_account || '';
+        inputSourceServerId.value = data.source_server_id || '';
+        inputSourceServerName.value = data.source_server_name || '';
         inputUsername.value = data.username || '';
         inputPassword.value = data.password || '';
         inputNotes.value = data.notes || '';
@@ -407,23 +477,28 @@ DELETE /public/api.php?resource=mikrotik&id=1</code></pre>
             host: 'IP / Host',
             location: 'Lokasi',
             category: 'Kategori',
+            pppoe_account: 'Akun PPPoE',
+            source_server: 'Server Sumber',
             username: 'Username',
             password: 'Password',
             notes: 'Catatan'
         };
-        ['id', 'name', 'host', 'location', 'category', 'username', 'password', 'notes'].forEach(function (key) {
+        ['id', 'name', 'host', 'location', 'category', 'pppoe_account', 'source_server', 'username', 'password', 'notes'].forEach(function (key) {
             var td = document.createElement('td');
             td.setAttribute('data-label', labelMap[key] || key);
-            if (key === 'host' && item[key]) {
+            var value = key === 'source_server'
+                ? (item.source_server_name || item.source_server_id || '')
+                : (item[key] || '');
+            if (key === 'host' && value) {
                 var a = document.createElement('a');
-                var href = item[key].toLowerCase().startsWith('http') ? item[key] : 'http://' + item[key];
+                var href = value.toLowerCase().startsWith('http') ? value : 'http://' + value;
                 a.href = href;
                 a.target = '_blank';
                 a.rel = 'noreferrer';
-                a.textContent = item[key];
+                a.textContent = value;
                 td.appendChild(a);
             } else {
-                td.textContent = item[key] || '';
+                td.textContent = value;
             }
             tr.appendChild(td);
         });
@@ -460,9 +535,11 @@ DELETE /public/api.php?resource=mikrotik&id=1</code></pre>
         }
         cells[3].textContent = item.location || '';
         cells[4].textContent = item.category || '';
-        cells[5].textContent = item.username || '';
-        cells[6].textContent = item.password || '';
-        cells[7].textContent = item.notes || '';
+        cells[5].textContent = item.pppoe_account || '';
+        cells[6].textContent = item.source_server_name || item.source_server_id || '';
+        cells[7].textContent = item.username || '';
+        cells[8].textContent = item.password || '';
+        cells[9].textContent = item.notes || '';
         setRowData(row, item);
         applyFilter();
     }
@@ -472,7 +549,7 @@ DELETE /public/api.php?resource=mikrotik&id=1</code></pre>
         if (row) row.remove();
         var dataRows = tableBody.querySelectorAll('tr[data-id]');
         if (dataRows.length === 0) {
-            tableBody.innerHTML = '<tr><td colspan="9">Belum ada data. Klik \"Tambah Router\".</td></tr>';
+            tableBody.innerHTML = '<tr><td colspan="11">Belum ada data. Klik \"Tambah Router\".</td></tr>';
             ensureNoMatchRow();
         }
         applyFilter();
@@ -484,6 +561,9 @@ DELETE /public/api.php?resource=mikrotik&id=1</code></pre>
         row.dataset.host = item.host || '';
         row.dataset.location = item.location || '';
         row.dataset.category = item.category || '';
+        row.dataset.pppoeAccount = item.pppoe_account || '';
+        row.dataset.sourceServerId = item.source_server_id || '';
+        row.dataset.sourceServerName = item.source_server_name || '';
         row.dataset.username = item.username || '';
         row.dataset.password = item.password || '';
         row.dataset.notes = item.notes || '';
@@ -540,7 +620,7 @@ DELETE /public/api.php?resource=mikrotik&id=1</code></pre>
             noMatchRow.id = 'mikrotik-no-match';
             noMatchRow.style.display = 'none';
             var td = document.createElement('td');
-            td.colSpan = 9;
+            td.colSpan = 11;
             td.textContent = 'Tidak ada hasil untuk pencarian.';
             noMatchRow.appendChild(td);
             tableBody.appendChild(noMatchRow);
@@ -560,6 +640,9 @@ DELETE /public/api.php?resource=mikrotik&id=1</code></pre>
                 (row.dataset.host || '') + ' ' +
                 (row.dataset.location || '') + ' ' +
                 (row.dataset.category || '') + ' ' +
+                (row.dataset.pppoeAccount || '') + ' ' +
+                (row.dataset.sourceServerName || '') + ' ' +
+                (row.dataset.sourceServerId || '') + ' ' +
                 (row.dataset.username || '') + ' ' +
                 (row.dataset.notes || '')
             ).toLowerCase();

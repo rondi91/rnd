@@ -118,6 +118,9 @@ function buildItem(string $resource, array $input, array $existing = []): array
                 'notes' => $input['notes'] ?? ($existing['notes'] ?? ''),
                 'username' => $input['username'] ?? ($existing['username'] ?? ''),
                 'password' => $input['password'] ?? ($existing['password'] ?? ''),
+                'pppoe_account' => $input['pppoe_account'] ?? ($existing['pppoe_account'] ?? ''),
+                'source_server_id' => $input['source_server_id'] ?? ($existing['source_server_id'] ?? ''),
+                'source_server_name' => $input['source_server_name'] ?? ($existing['source_server_name'] ?? ''),
             ];
         case 'users':
         default:

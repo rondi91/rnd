@@ -6,6 +6,10 @@ require_once __DIR__ . '/../vendor/autoload.php';
 use RouterOS\Client;
 use RouterOS\Query;
 
+ini_set('display_errors', '0');
+ini_set('html_errors', '0');
+error_reporting(E_ALL);
+
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Headers: Content-Type');
@@ -37,13 +41,31 @@ if ($locationFilter !== '') {
 
 $list = [];
 $errors = [];
+$failedRouters = [];
+$okRouterMap = [];
+
+/**
+ * @param array<string,mixed> $ap
+ */
+function pushFailedRouter(array &$failedRouters, array $ap, string $reason): void
+{
+    $failedRouters[] = [
+        'id' => (string) ($ap['id'] ?? ''),
+        'name' => (string) ($ap['name'] ?? ''),
+        'host' => (string) ($ap['host'] ?? ''),
+        'location' => (string) ($ap['location'] ?? ''),
+        'reason' => $reason,
+    ];
+}
 
 foreach ($aps as $ap) {
     $host = $ap['host'] ?? '';
     $user = $ap['username'] ?? '';
     $pass = $ap['password'] ?? '';
     if ($host === '' || $user === '' || $pass === '') {
-        $errors[] = 'Router AP ' . ($ap['name'] ?? '') . ' kredensial tidak lengkap.';
+        $reason = 'Kredensial tidak lengkap.';
+        $errors[] = 'Router AP ' . ($ap['name'] ?? '') . ' ' . $reason;
+        pushFailedRouter($failedRouters, $ap, $reason);
         continue;
     }
     try {
@@ -66,6 +88,7 @@ foreach ($aps as $ap) {
             // ignore frequency error
         }
         if (is_array($resp)) {
+            $okRouterMap[(string) ($ap['id'] ?? $host)] = true;
             foreach ($resp as $row) {
                 $item = [
                     'router_name' => $ap['name'] ?? '',
@@ -96,11 +119,19 @@ foreach ($aps as $ap) {
             }
         }
     } catch (\Throwable $e) {
-        $errors[] = 'Gagal ambil wireless register dari ' . ($ap['name'] ?? $host) . ': ' . $e->getMessage();
+        $reason = $e->getMessage();
+        $errors[] = 'Gagal ambil wireless register dari ' . ($ap['name'] ?? $host) . ': ' . $reason;
+        pushFailedRouter($failedRouters, $ap, $reason);
     }
 }
 
 echo json_encode([
     'data' => $list,
     'errors' => $errors,
+    'failed_routers' => $failedRouters,
+    'summary' => [
+        'total_router' => count($aps),
+        'ok_router' => count($okRouterMap),
+        'failed_router' => count($failedRouters),
+    ],
 ]);
